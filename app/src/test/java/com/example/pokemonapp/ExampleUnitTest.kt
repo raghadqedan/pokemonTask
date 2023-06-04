@@ -1,4 +1,4 @@
-package com.example.pokemontask
+package com.example.pokemonapp
 
 import org.junit.Test
 
