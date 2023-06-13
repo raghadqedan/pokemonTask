@@ -2,7 +2,6 @@ package com.example.pokemonapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -10,14 +9,11 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.example.pokemonapp.adapter.PokemonListAdapter
-import com.example.pokemonapp.api.RetrofitBuilder
+import com.example.pokemonapp.api.PokemonRepository
 import com.example.pokemonapp.common.Common
 import com.example.pokemonapp.databinding.PokemonListActivityBinding
 import com.example.pokemonapp.model.PokemonItem
-import com.example.pokemonapp.model.PokemonListResponse
 import kotlinx.coroutines.*
-import retrofit2.Call
-import retrofit2.Response
 
 
 class PokemonListActivity : AppCompatActivity() {
@@ -28,19 +24,16 @@ class PokemonListActivity : AppCompatActivity() {
     private lateinit var  layoutManager:LayoutManager
     private lateinit var  searchView: SearchView
     lateinit var adapter:PokemonListAdapter
+    private lateinit var pokemonRepository: PokemonRepository
     var color:Int=0
-    companion object {
-        const val ARG_POKEMON_NAME = "ARG_POKEMON_NAME"
-        const val ARG_POKEMON_NUMBER = "ARG_POKEMON_NUMBER"
-        const val ARG_POKEMON_CARD_COLOR= "ARG_POKEMON_CARD_COLOR"
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()
+        pokemonRepository=PokemonRepository()
         runBlocking {
             launch(Dispatchers.IO) {
-                Common.fetchAllPokemonList()
+                PokemonRepository().fetchAllPokemonList()
             }.join()
         }
         binding=PokemonListActivityBinding.inflate(layoutInflater)
@@ -113,72 +106,36 @@ class PokemonListActivity : AppCompatActivity() {
     private fun addArgumnts(pokemonItem:PokemonItem) {
         val   intent= Intent(this@PokemonListActivity,PokemonActivity::class.java)
         intent.apply {
-            putExtra(ARG_POKEMON_NUMBER, pokemonItem.getNumber().toString())
-            putExtra(ARG_POKEMON_NAME,pokemonItem.name)
-            putExtra(ARG_POKEMON_CARD_COLOR,pokemonItem.color)}
+            putExtra(Extra_POKEMON_NUMBER, pokemonItem.getNumber().toString())
+            putExtra(EXTRA_POKEMON_NAME,pokemonItem.name)
+            putExtra(Extra_POKEMON_CARD_COLOR,pokemonItem.color)}
 
         startActivity(intent)
     }
-
-    private fun fetchPokemonList(offset: Int) {
-        if(offset==0)
-        { Common.PokemonList.clear()
-        }
-        try {
-            val data = RetrofitBuilder.retrofitApiInterface.getPokemonList(20, offset)
-            data.enqueue(object : retrofit2.Callback<PokemonListResponse> {
-                override fun onResponse(
-                    call: Call<PokemonListResponse>,
-                    response: Response<PokemonListResponse>
-                ) {
-                    if (!response.isSuccessful) {
-                        Toast.makeText(
-                            this@PokemonListActivity,
-                            "Failed: ${response.code()}",
-                            Toast.LENGTH_SHORT
-                        ).show();
-                        return
-                    }
-
-                    val pokemonList: PokemonListResponse? = response.body()
-                    assert(pokemonList != null)
-                    for (pokemonData in pokemonList!!.results) {
-                        for (pokemonItem in Common.AllPokemonList) {
-                            if (pokemonData.name == pokemonItem.name) {
-                                Log.d("AllPokemon", Common.AllPokemonList.toString())
-                                pokemonData.color = pokemonItem.color
-                                break
-                            }
-                        }
-                    }
-                    addItems(pokemonList.results as MutableList<PokemonItem>)
+    private fun fetchPokemonList(offset: Int){
+            PokemonRepository().fetchPokemonList(offset,
+                onResponse={pokemonList->
+                    addItems(pokemonList as MutableList<PokemonItem>)
                     adapter = PokemonListAdapter(
                         this@PokemonListActivity,
-                        Common.PokemonList
-                    ) { pokemonItem ->
-                        addArgumnts(pokemonItem)
-                    }
+                         Common.PokemonList){ pokemonItem ->
+                                               addArgumnts(pokemonItem)}
                     recyclerView.adapter = adapter
                     recyclerView.scrollToPosition(Common.position)
-                    load = true
-                }
+                    load = true },
+                onFailed={Toast.makeText(this@PokemonListActivity,
+                          "Failed To Retrieve item ",
+                          Toast.LENGTH_LONG).show()}
+            )}
 
-                override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
-                    Toast.makeText(
-                        this@PokemonListActivity,
-                        "Failed To Retrieve item ",
-                        Toast.LENGTH_LONG
-                    )
-                        .show()
-                }
-            })
-        }catch (e:java.lang.AssertionError)
-        {Toast.makeText(this@PokemonListActivity,"Failed : ${e.message}",Toast.LENGTH_LONG).show()
-        }
-    }
-}
        private fun addItems(results: MutableList<PokemonItem>) {
                 Common.PokemonList.addAll(results)
             }
 
+    companion object {
+        const val  EXTRA_POKEMON_NAME = "ARG_POKEMON_NAME"
+        const val  Extra_POKEMON_NUMBER = "ARG_POKEMON_NUMBER"
+        const val  Extra_POKEMON_CARD_COLOR= "ARG_POKEMON_CARD_COLOR"
+    }
 
+}

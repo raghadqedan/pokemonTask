@@ -3,7 +3,7 @@ package com.example.pokemonapp.common
 
 import android.graphics.Color
 import android.util.Log
-import com.example.pokemonapp.api.RetrofitBuilder
+import com.example.pokemonapp.api.ServiceBuilder
 import com.example.pokemonapp.model.PokemonItem
 import com.example.pokemonapp.model.PokemonListResponse
 
@@ -34,25 +34,5 @@ object Common {
         Color.rgb(249, 123, 34)
     )
 
-     fun fetchAllPokemonList() {
-        val data = RetrofitBuilder.retrofitApiInterface.getPokemonList(100000, 0)
-        try {
-            val response = data.execute()//sent request to Api and block the main thread until received response
-            if (!response.isSuccessful) {
-                Log.d("FetchAllPokemonList", "Error: ${response.code()}")
-                return
-                }
-            val pokemonList: PokemonListResponse? = response.body()
-            assert( pokemonList != null)
-            val allPokemonList = pokemonList!!.results
-            for (pokemonData in allPokemonList) {
-                pokemonData.getColor() // Assign color using the getColor() function
-            }
-            AllPokemonList = allPokemonList
-            Log.d("FetchAllPokemonList", "Successful: ${response.code()}")
-        } catch (e: java.lang.AssertionError) {
-            Log.e("FetchAllPokemonList", "Exception: ${e.message}")
-        }
-    }
 
 }

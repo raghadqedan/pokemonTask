@@ -10,15 +10,11 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
-interface ApiInterface {
+interface pokemonApis{
        @GET("pokemon/")
         fun getPokemonList(@Query("limit") limit: Int, @Query("offset") offset: Int):Call<PokemonListResponse>
 
         @GET("pokemon/{name}")
         fun  getPokemonDetails(@Path("name") name:String): Call<PokemonDetailsResponse>
 
-}
-object RetrofitBuilder{
-       const val  BASE_URL="https://pokeapi.co/api/v2/"
-       val retrofitApiInterface = Retrofit.Builder().baseUrl(BASE_URL).addConverterFactory(GsonConverterFactory.create()).build().create(ApiInterface::class.java)
 }

@@ -16,7 +16,7 @@ import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.pokemonapp.adapter.PokemonActivityAdapter
-import com.example.pokemonapp.api.RetrofitBuilder
+import com.example.pokemonapp.api.ServiceBuilder
 import com.example.pokemonapp.common.Common
 import com.example.pokemonapp.databinding.PokemonActivityBinding
 import com.example.pokemonapp.model.PokemonDetailsResponse
@@ -77,7 +77,7 @@ class PokemonActivity : AppCompatActivity() {
     }
 
     private fun fetchPokemonData() {
-        val data = RetrofitBuilder.retrofitApiInterface.getPokemonDetails(pokemonName.toString())
+        val data = ServiceBuilder.Apiservice.getPokemonDetails(pokemonName.toString())
         data.enqueue(object : retrofit2.Callback<PokemonDetailsResponse> {
             @SuppressLint("SetTextI18n")
             override fun onResponse(
