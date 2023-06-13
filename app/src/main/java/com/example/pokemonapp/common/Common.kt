@@ -1,24 +1,19 @@
 package com.example.pokemonapp.common
 
-import android.content.Context
+
 import android.graphics.Color
 import android.util.Log
 import com.example.pokemonapp.api.RetrofitBuilder
 import com.example.pokemonapp.model.PokemonItem
 import com.example.pokemonapp.model.PokemonListResponse
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+
 
 object Common {
     var PokemonList:MutableList<PokemonItem> =ArrayList()
-    var AllPokemonList:MutableList<PokemonItem> =ArrayList()
+    var AllPokemonList:List<PokemonItem> =ArrayList()
     var position:Int=0
-    val PokemonNumber = "pokemonNumber"
-    val PokemonName = "pokemonName"
-    val PokemonCardColor="pokemonCardColor"
     val color= arrayOf(
-        Color.rgb(249, 123, 34),
+        Color.rgb(208, 156, 250),
         Color.rgb(254, 232, 176),
         Color.rgb(156, 167, 119),
         Color.rgb(249, 123, 34),
@@ -36,24 +31,28 @@ object Common {
         Color.rgb(109, 93, 110),
         Color.rgb(205, 88, 136),
         Color.rgb(192, 74, 130),
-        Color.rgb(208, 156, 250)
+        Color.rgb(249, 123, 34)
     )
 
-   fun  fetchAllPokemonList(){
-       var data=RetrofitBuilder.retrofitApiInterface.getPokemonList(100000,0)
-       data.enqueue(object:Callback<PokemonListResponse>{
-           override fun onResponse(
-               call: Call<PokemonListResponse>,
-               response: Response<PokemonListResponse>) {
-               if(response.isSuccessful) {
-                  AllPokemonList= response.body()!!.results
-                   Log.d("successful","successful")
-                 }
-               }
+     fun fetchAllPokemonList() {
+        val data = RetrofitBuilder.retrofitApiInterface.getPokemonList(100000, 0)
+        try {
+            val response = data.execute()//sent request to Api and block the main thread until received response
+            if (!response.isSuccessful) {
+                Log.d("FetchAllPokemonList", "Error: ${response.code()}")
+                return
+                }
+            val pokemonList: PokemonListResponse? = response.body()
+            assert( pokemonList != null)
+            val allPokemonList = pokemonList!!.results
+            for (pokemonData in allPokemonList) {
+                pokemonData.getColor() // Assign color using the getColor() function
+            }
+            AllPokemonList = allPokemonList
+            Log.d("FetchAllPokemonList", "Successful: ${response.code()}")
+        } catch (e: java.lang.AssertionError) {
+            Log.e("FetchAllPokemonList", "Exception: ${e.message}")
+        }
+    }
 
-           override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
-               Log.d("Failed","Failed")
-           }
-       })
-   }
 }

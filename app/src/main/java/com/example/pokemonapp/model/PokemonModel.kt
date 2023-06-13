@@ -1,13 +1,27 @@
 package com.example.pokemonapp.model
 
-data class PokemonListResponse(
-    val results:MutableList<PokemonItem>)
 
-class PokemonItem(
+import android.util.Log
+import com.example.pokemonapp.common.Common
+
+data class PokemonListResponse(
+    val results:List<PokemonItem>)
+
+ data class PokemonItem(
     val name:String,
-    val url:String,)
+    val url:String,
+    var color:Int
+
+   )
 {
-     fun getNumber():Int {
+
+    @JvmName("getColor1")
+    fun getColor():Int{
+       this.color=Common.color.random()
+       return color
+    }
+
+    fun getNumber():Int {
          val array =this.url.split("/")
          var  number:Int = Integer.parseInt(array[array.size - 2])
          return number

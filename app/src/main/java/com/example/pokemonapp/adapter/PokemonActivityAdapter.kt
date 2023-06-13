@@ -24,6 +24,7 @@ class PokemonActivityAdapter( private val pokemonStats:List<Stat>):RecyclerView.
         holder.baseStat.text = pokemonStats[position].base_stat.toString()
         holder.statName.text = pokemonStats[position].stat.name
     }
+
     override fun getItemCount(): Int {
         return pokemonStats.size
     }
