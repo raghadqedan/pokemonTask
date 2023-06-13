@@ -48,7 +48,7 @@ class PokemonListActivity : AppCompatActivity() {
             fetchPokemonList(offset)
         }
         adapter=PokemonListAdapter(this@PokemonListActivity, Common.PokemonList){ pokemonItem ->
-            addArgumnts(pokemonItem)
+            startPokemonActivity(pokemonItem)
         }
         recyclerView.adapter =adapter
         searchView.setOnQueryTextListener(object:SearchView.OnQueryTextListener {
@@ -60,7 +60,7 @@ class PokemonListActivity : AppCompatActivity() {
                 if (!newText.isNullOrEmpty()) {
                     if (newText.length <=2) {
                         adapter = PokemonListAdapter(this@PokemonListActivity,Common.PokemonList){pokemonItem ->
-                            addArgumnts(pokemonItem)
+                            startPokemonActivity(pokemonItem)
                         }
                         recyclerView.adapter = adapter
                         recyclerView.scrollToPosition(Common.position)
@@ -71,7 +71,7 @@ class PokemonListActivity : AppCompatActivity() {
                         adapter = PokemonListAdapter(this@PokemonListActivity,
                             filteredList as MutableList<PokemonItem>
                         ) { pokemonItem->
-                            addArgumnts(pokemonItem)
+                            startPokemonActivity(pokemonItem)
                         }
                         recyclerView.adapter = adapter
                     }
@@ -103,7 +103,7 @@ class PokemonListActivity : AppCompatActivity() {
      )}
 
 
-    private fun addArgumnts(pokemonItem:PokemonItem) {
+    private fun  startPokemonActivity(pokemonItem:PokemonItem) {
         val   intent= Intent(this@PokemonListActivity,PokemonActivity::class.java)
         intent.apply {
             putExtra(Extra_POKEMON_NUMBER, pokemonItem.getNumber().toString())
@@ -119,7 +119,7 @@ class PokemonListActivity : AppCompatActivity() {
                     adapter = PokemonListAdapter(
                         this@PokemonListActivity,
                          Common.PokemonList){ pokemonItem ->
-                                               addArgumnts(pokemonItem)}
+                        startPokemonActivity(pokemonItem)}
                     recyclerView.adapter = adapter
                     recyclerView.scrollToPosition(Common.position)
                     load = true },
