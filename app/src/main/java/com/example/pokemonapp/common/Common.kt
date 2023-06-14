@@ -2,10 +2,7 @@ package com.example.pokemonapp.common
 
 
 import android.graphics.Color
-import android.util.Log
-import com.example.pokemonapp.api.ServiceBuilder
 import com.example.pokemonapp.model.PokemonItem
-import com.example.pokemonapp.model.PokemonListResponse
 
 
 object Common {
@@ -33,6 +30,5 @@ object Common {
         Color.rgb(192, 74, 130),
         Color.rgb(249, 123, 34)
     )
-
 
 }

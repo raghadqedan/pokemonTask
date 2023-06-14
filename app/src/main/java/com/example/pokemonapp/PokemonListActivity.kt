@@ -113,7 +113,7 @@ class PokemonListActivity : AppCompatActivity() {
         startActivity(intent)
     }
     private fun fetchPokemonList(offset: Int){
-            PokemonRepository().fetchPokemonList(offset,
+            pokemonRepository.fetchPokemonList(offset,
                 onResponse={pokemonList->
                     addItems(pokemonList as MutableList<PokemonItem>)
                     adapter = PokemonListAdapter(
