@@ -8,7 +8,15 @@ import retrofit2.Call
 import retrofit2.Response
 
 object PokemonRepository {
-     private  var instance:PokemonRepository?=null
+    private  var instance:PokemonRepository?=null
+    private var pokemonList:MutableList<PokemonItem> =ArrayList()
+    private var allPokemonList:List<PokemonItem> =ArrayList()
+    fun getPokemonList():MutableList<PokemonItem>{
+        return pokemonList
+    }
+    fun getallPokemonList():List<PokemonItem>{
+        return allPokemonList
+    }
     @Synchronized
     fun getInstance():PokemonRepository{
         if(instance==null){
@@ -30,7 +38,7 @@ object PokemonRepository {
             for (pokemonData in allPokemonList) {
                 pokemonData.getColor() // Assign color using the getColor() function
             }
-            Common.AllPokemonList = allPokemonList
+            this.allPokemonList = allPokemonList
             Log.d("FetchAllPokemonList", "Successful: ${response.code()}")
         } catch (e: java.lang.AssertionError) {
             Log.e("FetchAllPokemonList", "Exception: ${e.message}")
@@ -53,7 +61,7 @@ object PokemonRepository {
                     val pokemonList: PokemonListResponse? = response.body()
                     assert(pokemonList != null)
                     for (pokemonData in pokemonList!!.results) {
-                        for (pokemonItem in Common.AllPokemonList) {
+                        for (pokemonItem in allPokemonList) {
                             if (pokemonData.name == pokemonItem.name) {
                                 pokemonData.color = pokemonItem.color
                                 break

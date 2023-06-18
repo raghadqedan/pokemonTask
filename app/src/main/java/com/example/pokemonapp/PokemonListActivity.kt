@@ -47,7 +47,7 @@ class PokemonListActivity : AppCompatActivity() {
 
             fetchPokemonList(offset)
         }
-        adapter=PokemonListAdapter(this@PokemonListActivity, Common.PokemonList){ pokemonItem ->
+        adapter=PokemonListAdapter(this@PokemonListActivity, pokemonRepository.getPokemonList()){ pokemonItem ->
             startPokemonActivity(pokemonItem)
         }
         recyclerView.adapter =adapter
@@ -59,13 +59,13 @@ class PokemonListActivity : AppCompatActivity() {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (!newText.isNullOrEmpty()) {
                     if (newText.length <=2) {
-                        adapter = PokemonListAdapter(this@PokemonListActivity,Common.PokemonList){pokemonItem ->
+                        adapter = PokemonListAdapter(this@PokemonListActivity,pokemonRepository.getPokemonList()){pokemonItem ->
                             startPokemonActivity(pokemonItem)
                         }
                         recyclerView.adapter = adapter
                         recyclerView.scrollToPosition(Common.position)
                     }else{
-                        val  filteredList= Common.AllPokemonList.filter { item ->
+                        val  filteredList= pokemonRepository.getallPokemonList().filter { item ->
                             item.name.contains(newText, ignoreCase = true)
                         }
                         adapter = PokemonListAdapter(this@PokemonListActivity,
@@ -93,7 +93,7 @@ class PokemonListActivity : AppCompatActivity() {
                         if (load) {
                             load = false
                             offset += 20
-                            Common.position=Common.PokemonList.size-2
+                            Common.position=pokemonRepository.getPokemonList().size-2
                             fetchPokemonList(offset)
                         }
                     }
@@ -118,7 +118,7 @@ class PokemonListActivity : AppCompatActivity() {
                     addItems(pokemonList as MutableList<PokemonItem>)
                     adapter = PokemonListAdapter(
                         this@PokemonListActivity,
-                         Common.PokemonList){ pokemonItem ->
+                        pokemonRepository.getPokemonList()){ pokemonItem ->
                         startPokemonActivity(pokemonItem)}
                     recyclerView.adapter = adapter
                     recyclerView.scrollToPosition(Common.position)
@@ -129,7 +129,7 @@ class PokemonListActivity : AppCompatActivity() {
             )}
 
        private fun addItems(results: MutableList<PokemonItem>) {
-                Common.PokemonList.addAll(results)
+                pokemonRepository.getPokemonList().addAll(results)
             }
 
     companion object {

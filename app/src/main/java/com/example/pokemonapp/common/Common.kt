@@ -6,8 +6,6 @@ import com.example.pokemonapp.model.PokemonItem
 
 
 object Common {
-    var PokemonList:MutableList<PokemonItem> =ArrayList()
-    var AllPokemonList:List<PokemonItem> =ArrayList()
     var position:Int=0
     val color= arrayOf(
         Color.rgb(208, 156, 250),
