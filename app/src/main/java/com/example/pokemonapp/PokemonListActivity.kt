@@ -30,10 +30,10 @@ class PokemonListActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()
-        pokemonRepository=PokemonRepository()
+        pokemonRepository=PokemonRepository.getInstance()
         runBlocking {
             launch(Dispatchers.IO) {
-                PokemonRepository().fetchAllPokemonList()
+                PokemonRepository.fetchAllPokemonList()
             }.join()
         }
         binding=PokemonListActivityBinding.inflate(layoutInflater)

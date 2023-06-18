@@ -7,7 +7,15 @@ import com.example.pokemonapp.model.PokemonListResponse
 import retrofit2.Call
 import retrofit2.Response
 
-class PokemonRepository {
+object PokemonRepository {
+     private  var instance:PokemonRepository?=null
+    @Synchronized
+    fun getInstance():PokemonRepository{
+        if(instance==null){
+            instance= PokemonRepository
+        }
+        return instance!!
+    }
     fun fetchAllPokemonList() {
         val data = ServiceBuilder.Apiservice.getPokemonList(100000, 0)
         try {
