@@ -8,22 +8,19 @@ import retrofit2.Call
 import retrofit2.Response
 
 object PokemonRepository {
-    private  var instance:PokemonRepository?=null
-    private var pokemonList:MutableList<PokemonItem> =ArrayList()
-    private var allPokemonList:List<PokemonItem> =ArrayList()
+
+    private var pokemonList:MutableList<PokemonItem> = mutableListOf()
+
+    private var allPokemonList:List<PokemonItem> =mutableListOf()
+
     fun getPokemonList():MutableList<PokemonItem>{
         return pokemonList
     }
+
     fun getallPokemonList():List<PokemonItem>{
         return allPokemonList
     }
-    @Synchronized
-    fun getInstance():PokemonRepository{
-        if(instance==null){
-            instance= PokemonRepository
-        }
-        return instance!!
-    }
+
     fun fetchAllPokemonList() {
         val data = ServiceBuilder.Apiservice.getPokemonList(100000, 0)
         try {
@@ -45,38 +42,40 @@ object PokemonRepository {
         }
     }
 
+    fun fetchPokemonList(
+        offset: Int,
+        onResponse: (List<PokemonItem>) -> Unit,
+        onFailed: () -> Unit
+    ) {
+        val data = ServiceBuilder.Apiservice.getPokemonList(20, offset)
+        data.enqueue(object : retrofit2.Callback<PokemonListResponse> {
 
-    fun fetchPokemonList(offset: Int, onResponse:(List<PokemonItem>)->Unit, onFailed:()->Unit) {
-        try {
-            val data = ServiceBuilder.Apiservice.getPokemonList(20, offset)
-            data.enqueue(object : retrofit2.Callback<PokemonListResponse> {
-                override fun onResponse(
-                    call: Call<PokemonListResponse>,
-                    response: Response<PokemonListResponse>
-                ) {
-                    if (!response.isSuccessful) {
-                        onFailed()
-                        return
-                    }
-                    val pokemonList: PokemonListResponse? = response.body()
-                    assert(pokemonList != null)
-                    for (pokemonData in pokemonList!!.results) {
-                        for (pokemonItem in allPokemonList) {
-                            if (pokemonData.name == pokemonItem.name) {
-                                pokemonData.color = pokemonItem.color
-                                break
-                            }
-                        }
-                    }
-                    onResponse(pokemonList.results)
-                }
-                override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
+            override fun onResponse(
+                call: Call<PokemonListResponse>,
+                response: Response<PokemonListResponse>
+            ) {
+                if (!response.isSuccessful) {
                     onFailed()
                     return
                 }
-            })
-        }catch (e:java.lang.AssertionError){
-            Log.e("Failed","Failed+${e.message}")
-        }
+                val pokemonList: PokemonListResponse? = response.body()
+                assert(pokemonList != null)
+                for (pokemonData in pokemonList!!.results) {
+                    for (pokemonItem in allPokemonList) {
+                        if (pokemonData.name == pokemonItem.name) {
+                            pokemonData.color = pokemonItem.color
+                            break
+                        }
+                    }
+                }
+                this@PokemonRepository.pokemonList.addAll(pokemonList.results)
+                onResponse(pokemonList.results)
+            }
+
+            override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
+                onFailed()
+                return
+            }
+        })
     }
 }

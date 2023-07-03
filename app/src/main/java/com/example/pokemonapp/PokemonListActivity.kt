@@ -24,13 +24,25 @@ class PokemonListActivity : AppCompatActivity() {
     private lateinit var  layoutManager:LayoutManager
     private lateinit var  searchView: SearchView
     lateinit var adapter:PokemonListAdapter
-    private lateinit var pokemonRepository: PokemonRepository
     var color:Int=0
+
+    private val pokemonsAdapter: PokemonListAdapter
+    private val searchResultAdaper: PokemonListAdapter
+
+    private val onScrollPositionChanged = { newPosition: Int ->
+        Common.position = newPosition
+        if (newPosition == PokemonRepository.getPokemonList().size - 1) {
+            fetchPokemonList(offset)
+        }
+    }
+
+    private val onPokemonClicked = { selectedPokemon: PokemonItem ->
+        startPokemonActivity(selectedPokemon)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportActionBar?.hide()
-        pokemonRepository=PokemonRepository.getInstance()
         runBlocking {
             launch(Dispatchers.IO) {
                 PokemonRepository.fetchAllPokemonList()
@@ -47,9 +59,15 @@ class PokemonListActivity : AppCompatActivity() {
 
             fetchPokemonList(offset)
         }
-        adapter=PokemonListAdapter(this@PokemonListActivity, pokemonRepository.getPokemonList()){ pokemonItem ->
-            startPokemonActivity(pokemonItem)
-        }
+        adapter=PokemonListAdapter(
+            this@PokemonListActivity,
+            PokemonRepository.getPokemonList(),
+            { pokemonItem ->
+                startPokemonActivity(pokemonItem)
+            },
+            onScrollPositionChanged
+        )
+
         recyclerView.adapter =adapter
         searchView.setOnQueryTextListener(object:SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
@@ -59,20 +77,31 @@ class PokemonListActivity : AppCompatActivity() {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (!newText.isNullOrEmpty()) {
                     if (newText.length <=2) {
-                        adapter = PokemonListAdapter(this@PokemonListActivity,pokemonRepository.getPokemonList()){pokemonItem ->
-                            startPokemonActivity(pokemonItem)
-                        }
+                        adapter = PokemonListAdapter(
+                            this@PokemonListActivity,
+                            PokemonRepository.getPokemonList(),
+                            { pokemonItem ->
+                                startPokemonActivity(pokemonItem)
+                            },
+                            onScrollPositionChanged
+                        )
                         recyclerView.adapter = adapter
                         recyclerView.scrollToPosition(Common.position)
+
+                        //TODO use a different adapter for the search result
+                        recyclerView.swapAdapter(searchResultAdaper, true)
+
                     }else{
-                        val  filteredList= pokemonRepository.getallPokemonList().filter { item ->
+                        val  filteredList= PokemonRepository.getallPokemonList().filter { item ->
                             item.name.contains(newText, ignoreCase = true)
                         }
                         adapter = PokemonListAdapter(this@PokemonListActivity,
-                            filteredList as MutableList<PokemonItem>
-                        ) { pokemonItem->
-                            startPokemonActivity(pokemonItem)
-                        }
+                            filteredList as MutableList<PokemonItem>,
+                            { pokemonItem->
+                                startPokemonActivity(pokemonItem)
+                            },
+                            onScrollPositionChanged
+                        )
                         recyclerView.adapter = adapter
                     }
                     return true
@@ -81,26 +110,27 @@ class PokemonListActivity : AppCompatActivity() {
             }
         })
 
-        recyclerView.addOnScrollListener(object :RecyclerView.OnScrollListener(){
-            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                super.onScrolled(recyclerView, dx, dy)
-                if(dy>0){
-                    val visibleItemCount = layoutManager.childCount
-                    val totalItemCount = layoutManager.itemCount
-                    val pastVisibleItems = (layoutManager as GridLayoutManager).findFirstVisibleItemPosition()
-                    val loadThreshold = 0 // Number of items remaining from the end to start loading more
-                    if (visibleItemCount + pastVisibleItems + loadThreshold >= totalItemCount) {
-                        if (load) {
-                            load = false
-                            offset += 20
-                            Common.position=pokemonRepository.getPokemonList().size-2
-                            fetchPokemonList(offset)
-                        }
-                    }
-                }
-            }
-        }
-     )}
+//        recyclerView.addOnScrollListener(object :RecyclerView.OnScrollListener(){
+//            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+//                super.onScrolled(recyclerView, dx, dy)
+//                if(dy>0){
+//                    val visibleItemCount = layoutManager.childCount
+//                    val totalItemCount = layoutManager.itemCount
+//                    val pastVisibleItems = (layoutManager as GridLayoutManager).findFirstVisibleItemPosition()
+//                    val loadThreshold = 0 // Number of items remaining from the end to start loading more
+//                    if (visibleItemCount + pastVisibleItems + loadThreshold >= totalItemCount) {
+//                        if (load) {
+//                            load = false
+//                            offset += 20
+//                            Common.position=pokemonRepository.getPokemonList().size-2
+//                            fetchPokemonList(offset)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//     )
+    }
 
 
     private fun  startPokemonActivity(pokemonItem:PokemonItem) {
@@ -112,25 +142,35 @@ class PokemonListActivity : AppCompatActivity() {
 
         startActivity(intent)
     }
-    private fun fetchPokemonList(offset: Int){
-            pokemonRepository.fetchPokemonList(offset,
-                onResponse={pokemonList->
-                    addItems(pokemonList as MutableList<PokemonItem>)
-                    adapter = PokemonListAdapter(
-                        this@PokemonListActivity,
-                        pokemonRepository.getPokemonList()){ pokemonItem ->
-                        startPokemonActivity(pokemonItem)}
-                    recyclerView.adapter = adapter
-                    recyclerView.scrollToPosition(Common.position)
-                    load = true },
-                onFailed={Toast.makeText(this@PokemonListActivity,
-                          "Failed To Retrieve item ",
-                          Toast.LENGTH_LONG).show()}
-            )}
+    private fun fetchPokemonList(offset: Int) {
+        PokemonRepository.fetchPokemonList(offset,
+            onResponse = { pokemonList ->
+                adapter = PokemonListAdapter(
+                    this@PokemonListActivity,
+                    PokemonRepository.getPokemonList(),
+                    onPokemonClicked,
+                    onScrollPositionChanged
+                )
 
-       private fun addItems(results: MutableList<PokemonItem>) {
-                pokemonRepository.getPokemonList().addAll(results)
+                adapter.addPokemons(pokemonList)
+                adapter.notifyItemRangeInserted(offset, offset + pokemonList.size)
+
+                recyclerView.adapter = adapter
+                recyclerView.scrollToPosition(Common.position)
+                load = true
+
+                this@PokemonListActivity.offset += pokemonList.size
+            },
+            onFailed = {
+                Toast.makeText(
+                    this@PokemonListActivity,
+                    "Failed To Retrieve item ",
+                    Toast.LENGTH_LONG
+                ).show()
             }
+        )
+    }
+
 
     companion object {
         const val  EXTRA_POKEMON_NAME = "ARG_POKEMON_NAME"

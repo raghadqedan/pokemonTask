@@ -20,7 +20,12 @@ import com.example.pokemonapp.model.PokemonItem
 import kotlin.reflect.typeOf
 
 
-class PokemonListAdapter(private val context:Context, private val pokemonList:List<PokemonItem>, private val onPokemonItemClicked: (PokemonItem) -> Unit):RecyclerView.Adapter<PokemonListAdapter.PokemonViewHolder>() {
+class PokemonListAdapter(
+    private val context: Context,
+    private var pokemonList: ArrayList<PokemonItem>,
+    private val onPokemonItemClicked: (PokemonItem) -> Unit,
+    private val onScrollChangedListener: (Int) -> Unit
+) : RecyclerView.Adapter<PokemonListAdapter.PokemonViewHolder>() {
 
     class PokemonViewHolder(private val view: View):RecyclerView.ViewHolder(view) {
         val pokemonName:TextView=view.findViewById(R.id.pokemonName)
@@ -36,23 +41,33 @@ class PokemonListAdapter(private val context:Context, private val pokemonList:Li
     }
 
     override fun onBindViewHolder(holder: PokemonViewHolder, position: Int) {
-        holder.pokemonName.text=pokemonList[position].name
+        holder.pokemonName.text = pokemonList[position].name
 
-        Glide.with(context).load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/"+pokemonList[position].getNumber()+".png")
-           .centerCrop()
-           .transition(DrawableTransitionOptions.withCrossFade())
-           .into(holder.pokemonImage)
-       var color=pokemonList[position].color
+        Glide.with(context)
+            .load("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/" + pokemonList[position].getNumber() + ".png")
+            .centerCrop()
+            .transition(DrawableTransitionOptions.withCrossFade())
+            .into(holder.pokemonImage)
+        var color = pokemonList[position].color
         holder.pokemonCard.setCardBackgroundColor(color)
         holder.pokemonCard.setOnClickListener {
-            Common.position= position
-            Log.d("position1",Common.position.toString())
+            Common.position = position
+            Log.d("position1", Common.position.toString())
             onPokemonItemClicked.invoke(pokemonList[position])
+        }
 
+        onScrollChangedListener(position)
     }
-}
 
     override fun getItemCount(): Int {
         return pokemonList.size
+    }
+
+    fun addPokemons(pokemonList: List<PokemonItem>) {
+        this@PokemonListAdapter.pokemonList.addAll(pokemonList)
+    }
+
+    fun setPokemons(pokemons: List<PokemonItem>) {
+        pokemonList = ArrayList(pokemons)
     }
 }
