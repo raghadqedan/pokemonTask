@@ -1,53 +1,39 @@
 package com.example.pokemonapp.api
 
 import android.util.Log
-import com.example.pokemonapp.common.Common
 import com.example.pokemonapp.model.PokemonItem
 import com.example.pokemonapp.model.PokemonListResponse
 import retrofit2.Call
 import retrofit2.Response
 
 object PokemonRepository {
-    private  var instance:PokemonRepository?=null
-    private var pokemonList:MutableList<PokemonItem> =ArrayList()
-    private var allPokemonList:List<PokemonItem> =ArrayList()
-    fun getPokemonList():MutableList<PokemonItem>{
-        return pokemonList
-    }
+     var allPokemonList:List<PokemonItem> =ArrayList()
+    private  set
+
     fun getallPokemonList():List<PokemonItem>{
         return allPokemonList
     }
-    @Synchronized
-    fun getInstance():PokemonRepository{
-        if(instance==null){
-            instance= PokemonRepository
-        }
-        return instance!!
-    }
     fun fetchAllPokemonList() {
         val data = ServiceBuilder.Apiservice.getPokemonList(100000, 0)
-        try {
             val response = data.execute()//sent request to Api and block the main thread until received response
             if (!response.isSuccessful) {
                 Log.d("FetchAllPokemonList", "Error: ${response.code()}")
                 return
             }
             val pokemonList: PokemonListResponse? = response.body()
-            assert( pokemonList != null)
+            if( pokemonList != null){
             val allPokemonList = pokemonList!!.results
             for (pokemonData in allPokemonList) {
                 pokemonData.getColor() // Assign color using the getColor() function
             }
             this.allPokemonList = allPokemonList
             Log.d("FetchAllPokemonList", "Successful: ${response.code()}")
-        } catch (e: java.lang.AssertionError) {
-            Log.e("FetchAllPokemonList", "Exception: ${e.message}")
-        }
-    }
+        }}
+
 
 
     fun fetchPokemonList(offset: Int, onResponse:(List<PokemonItem>)->Unit, onFailed:()->Unit) {
-        try {
+
             val data = ServiceBuilder.Apiservice.getPokemonList(20, offset)
             data.enqueue(object : retrofit2.Callback<PokemonListResponse> {
                 override fun onResponse(
@@ -68,6 +54,7 @@ object PokemonRepository {
                             }
                         }
                     }
+                   // this@PokemonRepository.pokemonList.addAll(pokemonList.results)
                     onResponse(pokemonList.results)
                 }
                 override fun onFailure(call: Call<PokemonListResponse>, t: Throwable) {
@@ -75,8 +62,5 @@ object PokemonRepository {
                     return
                 }
             })
-        }catch (e:java.lang.AssertionError){
-            Log.e("Failed","Failed+${e.message}")
-        }
     }
 }

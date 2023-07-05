@@ -20,7 +20,12 @@ import com.example.pokemonapp.model.PokemonItem
 import kotlin.reflect.typeOf
 
 
-class PokemonListAdapter(private val context:Context, private val pokemonList:List<PokemonItem>, private val onPokemonItemClicked: (PokemonItem) -> Unit):RecyclerView.Adapter<PokemonListAdapter.PokemonViewHolder>() {
+class PokemonListAdapter(
+    private val context:Context,
+    private var pokemonList:ArrayList<PokemonItem>,
+    private val onPokemonItemClicked: (PokemonItem) -> Unit,
+    private val onScrollPositionChanged: (Int)->Unit
+) :RecyclerView.Adapter<PokemonListAdapter.PokemonViewHolder>() {
 
     class PokemonViewHolder(private val view: View):RecyclerView.ViewHolder(view) {
         val pokemonName:TextView=view.findViewById(R.id.pokemonName)
@@ -45,14 +50,25 @@ class PokemonListAdapter(private val context:Context, private val pokemonList:Li
        var color=pokemonList[position].color
         holder.pokemonCard.setCardBackgroundColor(color)
         holder.pokemonCard.setOnClickListener {
-            Common.position= position
-            Log.d("position1",Common.position.toString())
+
             onPokemonItemClicked.invoke(pokemonList[position])
 
     }
+        onScrollPositionChanged(position)
+        Log.d("position",position.toString())
+        Log.d("CommonPosition",Common.position.toString())
 }
 
     override fun getItemCount(): Int {
         return pokemonList.size
+    }
+
+   fun addPokemons(pokemonList:List<PokemonItem>){
+//        Log.d("TAGB", this@PokemonListAdapter.pokemonList.toString())
+        this@PokemonListAdapter.pokemonList.addAll(pokemonList)
+//        Log.d("TAGA", this@PokemonListAdapter.pokemonList.toString())
+   }
+    fun setPokemons(pokemonList:ArrayList<PokemonItem>){
+        this@PokemonListAdapter.pokemonList=ArrayList(pokemonList)
     }
 }

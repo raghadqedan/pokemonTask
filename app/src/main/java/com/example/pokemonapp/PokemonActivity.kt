@@ -17,7 +17,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.example.pokemonapp.adapter.PokemonActivityAdapter
 import com.example.pokemonapp.api.ServiceBuilder
-import com.example.pokemonapp.common.Common
 import com.example.pokemonapp.databinding.PokemonActivityBinding
 import com.example.pokemonapp.model.PokemonDetailsResponse
 import retrofit2.Call
@@ -58,8 +57,6 @@ class PokemonActivity : AppCompatActivity() {
     }
 
     private fun initializeViews() {
-        pokemonHeight=findViewById(R.id.pokemonHeight)
-        pokemonWeight=findViewById(R.id.pokemonWeight)
         pokemonImage=findViewById(R.id.pokemonActivityImage)
         recyclerView=findViewById(R.id.activityRecyclerView)
         pokemonCard=findViewById(R.id.pokemonActivityCard)
