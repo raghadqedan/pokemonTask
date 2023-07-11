@@ -2,7 +2,6 @@ package com.example.pokemonapp
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.format.DateFormat
 import android.util.Log
 import android.widget.SearchView
 import android.widget.Toast
@@ -70,7 +69,6 @@ class PokemonListActivity : AppCompatActivity() {
 
         )
         recyclerView.adapter = pokemonAdapter
-        previousPosition=Common.position
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 return true
@@ -79,14 +77,15 @@ class PokemonListActivity : AppCompatActivity() {
             override fun onQueryTextChange(newText: String?): Boolean {
                 if (!newText.isNullOrEmpty()) {
                     if (newText.length <= 2) {
-                        Log.d("pBefore", Common.position.toString())
+                        Log.d("before",previousPosition.toString())
+                        if(newText.length==1){
+                            Log.d("taggg","aaaa")
+                            previousPosition= (layoutManager as GridLayoutManager).findFirstVisibleItemPosition()
+                            Log.d("After",previousPosition.toString())
+                        }
                         recyclerView.swapAdapter(pokemonAdapter,true)
-                        Log.d("pAfter", Common.position.toString())
                         recyclerView.scrollToPosition(previousPosition)
                     } else {
-                        if(newText.length==3){
-                        previousPosition= Common.position}
-                        Log.d("PreviousPosition",previousPosition.toString())
                         val filteredList = PokemonRepository.allPokemonList.filter { item ->
                             item.name.contains(newText, ignoreCase = true)
                         }
@@ -100,14 +99,11 @@ class PokemonListActivity : AppCompatActivity() {
                             lock = false
                             recyclerView.swapAdapter(searchPokemonadapter, true)
                         } else {
-                            //previousPosition=Common.position
                             recyclerView.swapAdapter(searchPokemonadapter, true)
                             searchPokemonadapter.setPokemons(filteredList as ArrayList<PokemonItem>)
                             searchPokemonadapter.notifyDataSetChanged()
                         }
-
                     }
-
                     return true
                 }
                 return false

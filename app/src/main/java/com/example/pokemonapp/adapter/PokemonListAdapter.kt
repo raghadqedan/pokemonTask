@@ -55,7 +55,6 @@ class PokemonListAdapter(
 
     }
         onScrollPositionChanged(position)
-        Log.d("position",position.toString())
         Log.d("CommonPosition",Common.position.toString())
 }
 
