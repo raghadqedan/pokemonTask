@@ -16,4 +16,4 @@ Coroutines
 Retrofit
 
 Glide
-## About the project
+
